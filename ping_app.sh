@@ -15,7 +15,9 @@ echo "--- Visit Start: $TIMESTAMP ---" >> $LOG_FILE
 # -o /dev/null: 不保存网页正文
 # -w "%{http_code}": 只输出状态码
 # -I: 发送 HEAD 请求（如果不行，可改为 -L）
-HTTP_STATUS=$(curl -L -k -s -I -o /dev/null -w "%{http_code}" \
+# -L: 自动跳转，直到抓取到最后的那个页面
+HTTP_STATUS=$(curl -L -k -s -o /dev/null -w "%{http_code}" \
+  --max-time 30 \
   -H "User-Agent: $UA" \
   "$URL")
 
