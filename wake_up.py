@@ -1,63 +1,72 @@
 import requests
 import time
+import random
+import os
 from datetime import datetime, timedelta, timezone
 
 URL = "https://crop-disease-recognition-and-control-system-release.streamlit.app/"
+LOG_FILE = "visit_log.log"
+
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "authority": "crop-disease-recognition-and-control-system-release.streamlit.app",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
 }
 
+def write_to_log(content):
+    """将信息写入本地 log 文件"""
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(content + "\n")
+
 def print_step_info(step_name, resp):
-    """打印单次请求的详细跳转过程和 Session 状态"""
-    print(f"\n--- {step_name} 详细过程 ---")
-    
-    # 1. 打印重定向历史 (如果有)
+    info = f"\n{'='*15} {step_name} {'='*15}\n"
     if resp.history:
         for i, hist in enumerate(resp.history, 1):
-            print(f"跳转层级 [{i}]:")
-            print(f"  状态码: {hist.status_code}")
-            print(f"  URL: {hist.url}")
+            info += f"[跳转 {i}] {hist.status_code} URL: {hist.url}\n"
+    info += f"[落地] {resp.status_code} URL: {resp.url}\n"
     
-    # 2. 打印最终落地信息
-    print(f"最终落地:")
-    print(f"  状态码: {resp.status_code}")
-    print(f"  URL: {resp.url}")
-    
-    # 3. 打印当前 Session 中的 Cookies
     cookies = resp.cookies.get_dict()
     if cookies:
-        print(f"当前 Session 携带的 Cookies:")
+        info += "当前 Session Cookies:\n"
         for k, v in cookies.items():
-            print(f"  - {k}: {v}")
-    else:
-        print("当前步骤未发现有效 Cookies")
+            info += f"  - {k}: {v}\n"
+    
+    print(info) # 打印到 Action 控制台
+    return info # 返回给 log 文件
 
 def wake_up():
     bj_time = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+    log_entry = f"\n# >>> 任务开始时间: {bj_time}\n"
     session = requests.Session()
     
     try:
-        # --- 第一次尝试 ---
-        print(f"[{bj_time}] === 开始全流程保活测试 ===")
+        # 第一层请求
         r1 = session.get(URL, headers=HEADERS, timeout=30, allow_redirects=True)
-        print_step_info("第一次请求 (叫醒与身份交换)", r1)
+        log_entry += print_step_info("第一层：主页加载", r1)
 
         if r1.status_code == 200:
-            print("\n" + "="*50)
-            print("等待 2 秒后发起第二次确认访问...")
-            time.sleep(2)
+            time.sleep(random.uniform(1, 3))
             
-            # --- 第二次确认 ---
-            r2 = session.get(URL, headers=HEADERS, timeout=30, allow_redirects=True)
-            print_step_info("第二次请求 (Session 维持确认)", r2)
+            # 第二层请求 (资源)
+            asset_url = f"{URL}favicon.ico"
+            r2 = session.get(asset_url, headers=HEADERS, timeout=20)
+            log_entry += f"\n第二层：静态资源请求 -> {asset_url} | 结果: {r2.status_code}\n"
+
+            # 第三层请求 (确认)
+            time.sleep(1)
+            r3 = session.get(URL, headers=HEADERS, timeout=30)
+            log_entry += print_step_info("第三层：Session 稳固确认", r3)
             
-            if r2.status_code == 200:
-                print("\n✅ 流程全部完成，应用已成功唤醒并维持 Session。")
+            log_entry += "✅ 流程全部完成\n"
         else:
-            print(f"\n❌ 流程中断，初次请求状态码: {r1.status_code}")
+            log_entry += f"❌ 访问异常，状态码: {r1.status_code}\n"
 
     except Exception as e:
-        print(f"\n💥 运行时异常: {e}")
+        log_entry += f"💥 发生错误: {str(e)}\n"
+    
+    log_entry += "-"*50 + "\n"
+    write_to_log(log_entry)
 
 if __name__ == "__main__":
     wake_up()
