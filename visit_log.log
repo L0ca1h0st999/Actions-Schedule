@@ -38,3 +38,23 @@
 ✅ 流程全部完成
 --------------------------------------------------
 
+
+# >>> 任务开始时间: 2026-01-25 01:40:25
+
+=============== 第一层：主页加载 ===============
+[跳转 1] 303 URL: https://crop-disease-recognition-and-control-system-release.streamlit.app/
+[跳转 2] 303 URL: https://share.streamlit.io/-/auth/app?redirect_uri=https%3A%2F%2Fcrop-disease-recognition-and-control-system-release.streamlit.app%2F
+[跳转 3] 303 URL: https://crop-disease-recognition-and-control-system-release.streamlit.app/-/login?payload=MTc2OTI3NjQyNXxvOEswSldzNUJCX1p2aE92czk4WnJkTW0zNUZGQmwwRnN0VW5DcnBOODQ5NmRWaTF1ekJ4bG9RSG5nNkFJeVRFTnNhVnJYT1BwRklhWDhEMmVSSE5CQ1ZSUXZuTEd3aXBadUZEN0RuT0hfSm5pWGtxRnJQQUNfZU5COEF1MGhUUzhVdklacURwQ1pzSGVPOS1CQXd5NXh4MzRfMmQ0dHhQS2UyaVE4U2tMZk1zWk9OaDZmS1djTmNkNDh6WnZpdVEwTFdLdVJBb2FjMDhTZ2JoYXg0Q21rNFpEYWhaa21wRXRibG5RZG5Tb0ZDZWtzX2p3VmJGcGlNdkJkUVJHRDItWThsRVA3MnhDMTB0LWdic1MtOVlqY1NQZ1VPX1FjRUhZdm56dW5Sek4xck91Si1UMUJqdmpFVVlHUm84NmdQdGt0d0N2UjMwTEhOVHAtZjljWEdqblNCcHdvcWlpSWVYOXNkSlJpSUw2bFRrVEVqdEZtMDlHNGtjYmNIS3pfd2h3aEgzUWU2MWNSR1pVSlBZMWdQTTA4ZDVHYWNaTjJqX1huRE1yZTdOWVJGUGFHSEpPeFZRUjUyNXNXWlJYdGxTNmg3ZkJ2T2xSMlZwQTVROVQwbTFtUGVZRkxmSjFYR0U5Qlg1WWVUQVJvMkEtZ3d4NEphNTZ6dTFfS3Q4WWh2MUM1UUFfYjZ0MktkYTdCV0JVYmlJVmI0VFYzejVSRDBGQnBPOUdqR3RXcmEzWmRuRlJySXdVaGdvdTF3OVhjOVlIN0Z4S3E5UHVvWT18rnIBLeByJTuFuqvCM8ODnGl8p-ozsQ74oBw-tY6u7Ww%3D
+[落地] 200 URL: https://crop-disease-recognition-and-control-system-release.streamlit.app/
+当前 Session Cookies:
+  - proxy-tracking-id: 12tar7mgjg6nymxr1edadmhnxind1te5
+
+第二层：静态资源请求 -> https://crop-disease-recognition-and-control-system-release.streamlit.app/favicon.ico | 结果: 200
+
+=============== 第三层：Session 稳固确认 ===============
+[落地] 200 URL: https://crop-disease-recognition-and-control-system-release.streamlit.app/
+当前 Session Cookies:
+  - proxy-tracking-id: 12tar7mgjg6nymxr1edadmhnxind1te5
+✅ 流程全部完成
+--------------------------------------------------
+
