@@ -1,6 +1,6 @@
 import requests
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # 你的 Streamlit 地址
 URL = "https://crop-disease-recognition-and-control-system-release.streamlit.app/"
@@ -10,28 +10,33 @@ HEADERS = {
 }
 
 def wake_up():
-    # 获取 UTC 时间并手动加 8 小时得到北京时间
-    bj_time = (datetime.utcnow() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+    # 现代写法：获取北京时间 (UTC+8)
+    bj_time = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     
     session = requests.Session()
-    print(f"[{bj_time}] 正在发起请求: {URL}")
     
     try:
-        # allow_redirects=True 会自动处理那串 303 跳转
-        response = session.get(URL, headers=HEADERS, timeout=30, allow_redirects=True)
-        
-        if response.history:
-            print("重定向路径:")
-            for resp in response.history:
-                print(f"  <- {resp.status_code} : {resp.url}")
-        
-        print(f"最终落地 URL: {response.url}")
-        print(f"最终状态码: {response.status_code}")
+        # --- 第一次尝试 ---
+        print(f"[{bj_time}] 正在发起第一次请求（叫醒）...")
+        response1 = session.get(URL, headers=HEADERS, timeout=30, allow_redirects=True)
+        print(f"第一次结果: {response1.status_code} | 落地: {response1.url}")
 
-        if response.status_code == 200:
-            print("✅ 成功: 页面已正常加载。")
+        if response1.status_code == 200:
+            print("✅ 第一次请求成功，正在进行第二次确认请求...")
+            
+            # 稍等 2 秒，模拟人的操作间隔
+            time.sleep(2)
+            
+            # --- 第二次确认 ---
+            response2 = session.get(URL, headers=HEADERS, timeout=30, allow_redirects=True)
+            print(f"第二次结果: {response2.status_code} | 落地: {response2.url}")
+            
+            if response2.status_code == 200:
+                print("🎯 二次确认成功！应用应已保持活跃。")
+            else:
+                print(f"⚠️ 第二次请求异常，状态码: {response2.status_code}")
         else:
-            print(f"❌ 失败: 收到状态码 {response.status_code}")
+            print(f"❌ 第一次请求失败，状态码: {response1.status_code}")
 
     except Exception as e:
         print(f"💥 发生错误: {e}")
