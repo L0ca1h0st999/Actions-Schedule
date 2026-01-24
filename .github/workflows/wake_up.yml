@@ -1,20 +1,26 @@
-name: Wake Up Streamlit App
+name: Wake Up Streamlit (Session Mode)
 
 on:
   schedule:
-    # 每一小时运行一次（北京时间每小时的 0 分左右）
+    # 每一小时运行一次，确保 Session 即使失效也能及时补上
     - cron: '0 */1 * * *'
-  workflow_dispatch: # 允许手动点击按钮测试
+  workflow_dispatch:
 
 jobs:
-  ping_website:
+  wake_up_job:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Make script executable
-        run: chmod +x ./ping_app.sh
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python_version: '3.10'
 
-      - name: Run ping script
-        run: ./ping_app.sh
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Wake Up Script
+        run: python wake_up.py
