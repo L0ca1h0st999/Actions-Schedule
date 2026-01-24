@@ -1,14 +1,15 @@
-name: Wake Up Streamlit (Session Mode)
+name: Wake Up Streamlit (Session & Log)
 
 on:
   schedule:
-    # 每一小时运行一次，确保 Session 即使失效也能及时补上
     - cron: '0 */1 * * *'
   workflow_dispatch:
 
 jobs:
   wake_up_job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # 必须开启写入权限
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,8 +20,15 @@ jobs:
           python_version: '3.10'
 
       - name: Install dependencies
-        run: |
-          pip install requests
+        run: pip install requests
 
       - name: Run Wake Up Script
         run: python wake_up.py
+
+      - name: Commit and Push Log
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add visit_log.log
+          git commit -m "Auto-log: $(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+          git push
