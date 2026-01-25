@@ -1,72 +1,64 @@
-import requests
-import time
-import random
 import os
+import time
 from datetime import datetime, timedelta, timezone
+from playwright.sync_api import sync_playwright
 
 URL = "https://crop-disease-recognition-and-control-system-release.streamlit.app/"
 LOG_FILE = "visit_log.log"
 
-HEADERS = {
-    "authority": "crop-disease-recognition-and-control-system-release.streamlit.app",
-    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-}
+def get_bj_time():
+    return (datetime.now(timezone.utc) + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
 
-def write_to_log(content):
-    """将信息写入本地 log 文件"""
+def log(message):
+    bj_time = get_bj_time()
+    line = f"[{bj_time}] {message}"
+    print(line)
     with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(content + "\n")
+        f.write(line + "\n")
 
-def print_step_info(step_name, resp):
-    info = f"\n{'='*15} {step_name} {'='*15}\n"
-    if resp.history:
-        for i, hist in enumerate(resp.history, 1):
-            info += f"[跳转 {i}] {hist.status_code} URL: {hist.url}\n"
-    info += f"[落地] {resp.status_code} URL: {resp.url}\n"
+def run():
+    log("=== 启动 Playwright 无头浏览器渲染模式 ===")
     
-    cookies = resp.cookies.get_dict()
-    if cookies:
-        info += "当前 Session Cookies:\n"
-        for k, v in cookies.items():
-            info += f"  - {k}: {v}\n"
-    
-    print(info) # 打印到 Action 控制台
-    return info # 返回给 log 文件
-
-def wake_up():
-    bj_time = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
-    log_entry = f"\n# >>> 任务开始时间: {bj_time}\n"
-    session = requests.Session()
-    
-    try:
-        # 第一层请求
-        r1 = session.get(URL, headers=HEADERS, timeout=30, allow_redirects=True)
-        log_entry += print_step_info("第一层：主页加载", r1)
-
-        if r1.status_code == 200:
-            time.sleep(random.uniform(1, 3))
+    with sync_playwright() as p:
+        # 启动 Chromium 浏览器
+        browser = p.chromium.launch(headless=True)
+        # 模拟真实浏览器上下文
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+            viewport={'width': 1280, 'height': 800}
+        )
+        page = context.new_page()
+        
+        try:
+            log(f"正在访问: {URL}")
+            # 等待网络空闲，确保 JS 加载完成
+            page.goto(URL, wait_until="networkidle", timeout=60000)
             
-            # 第二层请求 (资源)
-            asset_url = f"{URL}favicon.ico"
-            r2 = session.get(asset_url, headers=HEADERS, timeout=20)
-            log_entry += f"\n第二层：静态资源请求 -> {asset_url} | 结果: {r2.status_code}\n"
+            # 方案 A: 根据 data-testid 定位 (最精准)
+            # 方案 B: 根据文本内容定位
+            wakeup_button = page.locator('button:has-text("Yes, get this app back up!")').or_(
+                page.locator('[data-testid="wakeup-button-viewer"]')
+            ).or_(
+                page.locator('[data-testid="wakeup-button-owner"]')
+            )
 
-            # 第三层请求 (确认)
-            time.sleep(1)
-            r3 = session.get(URL, headers=HEADERS, timeout=30)
-            log_entry += print_step_info("第三层：Session 稳固确认", r3)
+            if wakeup_button.is_visible(timeout=10000):
+                log("🚨 检测到休眠按钮，正在执行点击唤醒...")
+                wakeup_button.click()
+                log("已点击唤醒按钮，等待 15 秒让容器启动...")
+                page.wait_for_timeout(15000)  # 给容器一点启动时间
+                log(f"唤醒后最终 URL: {page.url}")
+            else:
+                log("✅ 未发现唤醒按钮，应用可能已经处于活跃状态。")
+                
+            log(f"当前页面标题: {page.title()}")
             
-            log_entry += "✅ 流程全部完成\n"
-        else:
-            log_entry += f"❌ 访问异常，状态码: {r1.status_code}\n"
-
-    except Exception as e:
-        log_entry += f"💥 发生错误: {str(e)}\n"
-    
-    log_entry += "-"*50 + "\n"
-    write_to_log(log_entry)
+        except Exception as e:
+            log(f"💥 运行异常: {str(e)}")
+        finally:
+            browser.close()
+            log("=== 任务结束 ===")
+            with open(LOG_FILE, "a") as f: f.write("-" * 50 + "\n")
 
 if __name__ == "__main__":
-    wake_up()
+    run()
