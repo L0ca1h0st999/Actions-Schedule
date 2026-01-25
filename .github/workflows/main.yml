@@ -1,9 +1,9 @@
 name: Wake Up Streamlit (Session & Log)
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 */1 * * *'
-  workflow_dispatch:
 
 jobs:
   wake_up_job:
