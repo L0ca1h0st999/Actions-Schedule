@@ -1,0 +1,10 @@
+name: My Test
+on:
+  schedule:
+    - cron: "59 15 * * *"
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test echo
+        run: echo 'hello world'
